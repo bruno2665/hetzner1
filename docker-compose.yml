@@ -1,0 +1,48 @@
+services:
+  caddy:
+    image: ghcr.io/${GHCR_OWNER}/hetzner1:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [web]
+    depends_on: [uptime-kuma]
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks: [db]          # kein "ports:" -> von aussen nicht erreichbar
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    restart: unless-stopped
+    volumes:
+      - kuma_data:/app/data
+    networks: [web, db]     # db, damit Kuma Postgres ueberwachen kann
+
+networks:
+  web:
+  db:
+    internal: true          # Datenbank-Netz ohne Internetzugang
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pg_data:
+  kuma_data:
