@@ -40,6 +40,18 @@ docker compose logs -f caddy
 
 Danach sofort `https://<STATUS_DOMAIN>` öffnen und den Uptime-Kuma-Admin anlegen.
 
+## Aktionen aktualisieren
+
+Die Website (`site/index.html`) wird aus einer CSV-Datei erzeugt:
+
+```bash
+# neue CSV nach tools/denner_aktionen.csv kopieren, dann:
+python tools/build.py tools/denner_aktionen.csv tools/template.html site/index.html
+git add -A && git commit -m "Aktionen aktualisiert" && git push
+```
+
+GitHub Actions baut danach das Image neu. Auf dem VPS: `docker compose pull && docker compose up -d`.
+
 ## Updates
 
 ```bash

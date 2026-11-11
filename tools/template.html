@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aktionen der Woche</title>
+<style>
+:root {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --text: #1c1b19;
+  --muted: #6b6862;
+  --line: #e4e1da;
+  --accent: #c8102e;
+  --accent-soft: #fbe8eb;
+  --good: #1f7a4d;
+  --good-soft: #e3f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fdf1dc;
+  --chip: #eeece6;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141414; --surface: #1e1e1d; --text: #f1efea; --muted: #a39f97; --line: #2f2e2c;
+    --accent: #ff5a6e; --accent-soft: #3a1a20; --good: #5fd39a; --good-soft: #17301f;
+    --warn: #f0b45a; --warn-soft: #33270f; --chip: #2a2928; --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141414; --surface: #1e1e1d; --text: #f1efea; --muted: #a39f97; --line: #2f2e2c;
+  --accent: #ff5a6e; --accent-soft: #3a1a20; --good: #5fd39a; --good-soft: #17301f;
+  --warn: #f0b45a; --warn-soft: #33270f; --chip: #2a2928; --shadow: none;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+header { padding: 28px 0 8px; }
+h1 { margin: 0; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.02em; }
+.sub { color: var(--muted); margin-top: 4px; }
+.stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 4px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; min-width: 120px; }
+.stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 13px; }
+
+.toolbar {
+  position: sticky; top: 0; z-index: 5; background: var(--bg);
+  padding: 12px 0 10px; border-bottom: 1px solid var(--line);
+}
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+input[type=search], select {
+  font: inherit; color: var(--text); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-height: 40px;
+}
+input[type=search] { flex: 1 1 240px; min-width: 0; }
+select { flex: 0 0 auto; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); cursor: pointer; user-select: none; padding: 0 4px; }
+.toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: thin; }
+.chip {
+  flex: 0 0 auto; font: inherit; font-size: 13px; border: 0; cursor: pointer;
+  background: var(--chip); color: var(--text); border-radius: 999px; padding: 6px 12px;
+}
+.chip small { color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.chip[aria-pressed="true"] small { color: inherit; opacity: .7; }
+
+.result { color: var(--muted); font-size: 13px; margin: 14px 0 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; padding-bottom: 40px; }
+.card {
+  position: relative; display: flex; flex-direction: column; gap: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px; box-shadow: var(--shadow); text-decoration: none; color: inherit;
+  transition: transform .12s ease, border-color .12s ease;
+}
+.card:hover { transform: translateY(-2px); border-color: var(--muted); }
+.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cat { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding-right: 64px; }
+.badge {
+  position: absolute; top: 12px; right: 12px; background: var(--accent); color: #fff;
+  font-weight: 700; font-size: 14px; border-radius: 8px; padding: 3px 8px; font-variant-numeric: tabular-nums;
+}
+.name { font-weight: 600; font-size: 16px; line-height: 1.3; }
+.qty { color: var(--muted); font-size: 13px; }
+.price { display: flex; align-items: baseline; gap: 8px; margin-top: auto; padding-top: 6px; }
+.price b { font-size: 24px; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.price s { color: var(--muted); font-variant-numeric: tabular-nums; }
+.price .save { margin-left: auto; color: var(--good); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-size: 11px; font-weight: 600; border-radius: 6px; padding: 2px 6px; background: var(--chip); color: var(--muted); }
+.tag.half { background: var(--accent-soft); color: var(--accent); }
+.tag.special { background: var(--warn-soft); color: var(--warn); }
+.tag.cmp { background: var(--good-soft); color: var(--good); }
+.note { font-size: 12px; color: var(--muted); }
+.valid { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+.valid .soon { color: var(--accent); font-weight: 600; }
+.empty { text-align: center; color: var(--muted); padding: 60px 0; grid-column: 1 / -1; }
+footer { color: var(--muted); font-size: 12px; padding: 0 0 32px; }
+@media (max-width: 520px) {
+  .grid { grid-template-columns: 1fr; }
+  .stat { flex: 1 1 calc(50% - 10px); min-width: 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Aktionen der Woche</h1>
+    <div class="sub" id="sub"></div>
+    <div class="stats" id="stats"></div>
+  </header>
+</div>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="row">
+      <input type="search" id="q" placeholder="Produkt suchen …" aria-label="Produkt suchen">
+      <select id="sort" aria-label="Sortierung">
+        <option value="rabatt">Höchster Rabatt</option>
+        <option value="sparen">Höchste Ersparnis (CHF)</option>
+        <option value="preis-auf">Preis aufsteigend</option>
+        <option value="preis-ab">Preis absteigend</option>
+        <option value="name">Name A–Z</option>
+        <option value="ende">Läuft bald ab</option>
+      </select>
+      <label class="toggle"><input type="checkbox" id="half"> nur ½ Preis</label>
+      <label class="toggle"><input type="checkbox" id="disc"> nur mit Rabatt</label>
+    </div>
+    <div class="chips" id="chips" role="toolbar" aria-label="Kategorien"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="result" id="result" aria-live="polite"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div class="wrap">
+  <footer>Inoffizielle Übersicht, erstellt aus einer CSV-Datei (Aktionen ab __STAND__). Preise in CHF, ohne Gewähr – massgeblich sind die Angaben im Laden bzw. auf der verlinkten Produktseite.</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+const $ = id => document.getElementById(id);
+const chf = n => n.toFixed(2);
+const cmp = (x, y) => x === y ? 0 : x < y ? -1 : 1;
+const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const fmtDate = s => { const d = new Date(s + "T00:00:00"); return WD[d.getDay()] + " " + d.getDate() + "." + (d.getMonth()+1) + "."; };
+const today = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
+const daysLeft = s => Math.round((new Date(s + "T00:00:00") - today) / 86400000);
+
+// Datensaetze vorbereiten
+DATA.forEach(r => {
+  r.tags = r.hinweis ? r.hinweis.split(/\s*[;|]\s*/).filter(Boolean) : [];
+  r.half = r.tags.some(t => t.includes("½"));
+  r.save = r.vergleich && r.preis != null ? r.vergleich - r.preis : 0;
+  r.sortPreis = r.preis == null ? Infinity : r.preis;
+  r.search = (r.name + " " + r.menge + " " + r.kategorie).toLowerCase();
+});
+
+const state = { q: "", cat: "Alle", sort: "rabatt", half: false, disc: false };
+
+// Kopfbereich
+const bis = DATA.map(r => r.gueltig_bis).sort();
+$("sub").textContent = DATA.length + " Angebote · gültig bis " + fmtDate(bis[0]) + " bzw. länger";
+const withDisc = DATA.filter(r => r.rabatt);
+const stats = [
+  [DATA.length, "Angebote"],
+  [DATA.filter(r => r.half).length, "zum ½ Preis"],
+  [Math.max(...withDisc.map(r => r.rabatt)) + "%", "höchster Rabatt"],
+  [Math.round(withDisc.reduce((a, r) => a + r.rabatt, 0) / withDisc.length) + "%", "Ø Rabatt"],
+];
+stats.forEach(([v, l]) => {
+  const d = document.createElement("div"); d.className = "stat";
+  const b = document.createElement("b"); b.textContent = v;
+  const s = document.createElement("span"); s.textContent = l;
+  d.append(b, s); $("stats").append(d);
+});
+
+// Kategorien
+const counts = {};
+DATA.forEach(r => counts[r.kategorie] = (counts[r.kategorie] || 0) + 1);
+const cats = ["Alle", ...Object.keys(counts).sort((a, b) => a.localeCompare(b, "de"))];
+cats.forEach(c => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.type = "button"; b.dataset.cat = c;
+  b.append(c);
+  const s = document.createElement("small"); s.textContent = c === "Alle" ? DATA.length : counts[c];
+  b.append(s);
+  b.addEventListener("click", () => { state.cat = c; render(); });
+  $("chips").append(b);
+});
+
+const sorters = {
+  "rabatt":    (a, b) => (b.rabatt || 0) - (a.rabatt || 0) || cmp(a.sortPreis, b.sortPreis),
+  "sparen":    (a, b) => b.save - a.save,
+  "preis-auf": (a, b) => cmp(a.sortPreis, b.sortPreis),
+  "preis-ab":  (a, b) => cmp(b.sortPreis === Infinity ? -1 : b.sortPreis, a.sortPreis === Infinity ? -1 : a.sortPreis),
+  "name":      (a, b) => a.name.localeCompare(b.name, "de"),
+  "ende":      (a, b) => a.gueltig_bis.localeCompare(b.gueltig_bis) || (b.rabatt || 0) - (a.rabatt || 0),
+};
+
+function tagClass(t) {
+  if (t.includes("½")) return "tag half";
+  if (t === "SPECIAL" || t === "Wochenstart-Highlight") return "tag special";
+  if (t === "Konkurrenzvergleich") return "tag cmp";
+  return null;
+}
+
+function card(r) {
+  const safe = /^https:\/\/www\.denner\.ch\//.test(r.url);
+  const el = document.createElement(safe ? "a" : "div");
+  el.className = "card";
+  if (safe) { el.href = r.url; el.target = "_blank"; el.rel = "noopener noreferrer"; }
+
+  const cat = document.createElement("div"); cat.className = "cat"; cat.textContent = r.kategorie; el.append(cat);
+  if (r.rabatt) { const b = document.createElement("div"); b.className = "badge"; b.textContent = "−" + r.rabatt + "%"; el.append(b); }
+
+  const n = document.createElement("div"); n.className = "name"; n.textContent = r.name; el.append(n);
+  if (r.menge) { const q = document.createElement("div"); q.className = "qty"; q.textContent = r.menge; el.append(q); }
+
+  const short = r.tags.filter(tagClass), long = r.tags.filter(t => !tagClass(t));
+  if (short.length) {
+    const tg = document.createElement("div"); tg.className = "tags";
+    short.forEach(t => { const s = document.createElement("span"); s.className = tagClass(t); s.textContent = t; tg.append(s); });
+    el.append(tg);
+  }
+  long.forEach(t => { const p = document.createElement("div"); p.className = "note"; p.textContent = t; el.append(p); });
+
+  const pr = document.createElement("div"); pr.className = "price";
+  const b = document.createElement("b");
+  if (r.preis == null) { b.textContent = "−" + r.rabatt + "%"; const s = document.createElement("span"); s.className = "qty"; s.textContent = "aufs Sortiment"; pr.append(b, s); }
+  else { b.textContent = chf(r.preis); pr.append(b); }
+  if (r.vergleich) {
+    const s = document.createElement("s"); s.textContent = chf(r.vergleich); pr.append(s);
+    const sv = document.createElement("span"); sv.className = "save"; sv.textContent = "spart " + chf(r.save); pr.append(sv);
+  }
+  el.append(pr);
+
+  const v = document.createElement("div"); v.className = "valid";
+  const from = document.createElement("span"); from.textContent = fmtDate(r.gueltig_von) + " – " + fmtDate(r.gueltig_bis);
+  const left = daysLeft(r.gueltig_bis);
+  const lv = document.createElement("span");
+  if (left < 0) lv.textContent = "abgelaufen";
+  else if (left === 0) { lv.textContent = "endet heute"; lv.className = "soon"; }
+  else if (left === 1) { lv.textContent = "endet morgen"; lv.className = "soon"; }
+  else lv.textContent = "noch " + left + " Tage";
+  v.append(from, lv); el.append(v);
+  return el;
+}
+
+function render() {
+  const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+  const list = DATA.filter(r =>
+    (state.cat === "Alle" || r.kategorie === state.cat) &&
+    (!state.half || r.half) &&
+    (!state.disc || r.rabatt) &&
+    words.every(w => r.search.includes(w))
+  ).sort(sorters[state.sort]);
+
+  document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.cat === state.cat));
+  $("result").textContent = list.length === 1 ? "1 Angebot" : list.length + " Angebote";
+  const g = $("grid"); g.replaceChildren();
+  if (!list.length) {
+    const e = document.createElement("div"); e.className = "empty"; e.textContent = "Keine Angebote gefunden.";
+    g.append(e); return;
+  }
+  const frag = document.createDocumentFragment();
+  list.forEach(r => frag.append(card(r)));
+  g.append(frag);
+}
+
+$("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+$("sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
+$("half").addEventListener("change", e => { state.half = e.target.checked; render(); });
+$("disc").addEventListener("change", e => { state.disc = e.target.checked; render(); });
+render();
+</script>
+</body>
+</html>
